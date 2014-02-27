@@ -1,5 +1,2 @@
 asdf
-<<<<<<< HEAD
-lolz
-=======
-test
+Master
