@@ -1,0 +1,13 @@
+#! /bin/zsh
+
+touch bar
+
+exec {foo} > bar
+
+ps -Aa >& foo 
+
+awk '{cumu=cumu+$0} END {printf("%s",cumu)}' <& foo > >& foo
+
+echo EOF >> bar
+
+cat < bar
