@@ -1,0 +1,65 @@
+#kawaii af
+
+function sizeofDir($DIR) {
+	$i=0 
+	get-childitem $DIR | % { 
+		$f = $_;
+		$RAW="$(get-childitem -r $_.FullName | measure-object -property length -sum | select Sum)"
+		$RAW.trim("@","{","S","u","m","=","}") -split([environment]::newline) | % {
+			$i=$i+[int]($_)
+		}
+	}
+	write-output $i
+}
+
+function freeSpace($DRI) {
+	$RAW="$(Get-WmiObject Win32_Volume -Filter "DriveLetter = $DRI" | select FreeSpace)"
+	 write-output $RAW.trim("@","{","F","r","e","S","p","a","c","e","=","}")
+}
+
+
+function mkBkup($SRC,$DST) {
+	$SRCSZ=sizeofDir($SRC)
+	$DSTSZ=sizeofDir($DST)
+
+	echo $SRCSZ
+}
+
+
+$MUHL=get-content muhLancer.txt
+$MUHLANCER=""
+
+$MUHL -split([environment]::newline) | foreach {
+	#meta data (mta) contains last bkup date:
+	#	daily = day by # based off 2000
+	#interval is given either in 2 char day of week: mo,tu,we,sa,su
+	#			or daily/month/year: EvryD,EvryM,EvryY
+	$src,$dst,$int,$mta = $_ -split(";");
+	$SRC=$src.trim()
+	$DST=$dst.trim()
+	$INT=$int.trim()
+	$MTA=$mta.trim()
+
+	if($INT -eq "EvryD") {
+		$DATE="$(get-date -uformat "%Y")"+"$(get-date -uformat "%j")"
+		if($MTA -lt $DATE) {
+			mkBkup($SRC,$DST)
+		}
+	}
+	if($INT -eq "EvryM") {
+		$DATE="$(get-date -uformat "%Y")"+"$(get-date -uformat "%m")"
+		if($MTA -lt $DATE) {
+			mkBkup($SRC,$DST)
+		}
+	}
+	if($INT -eq "EvryY") {
+		$DATE="$(get-date -uformat "%Y")"
+		if($MTA -lt $DATE) {
+			mkBkup($SRC,$DST)
+		}
+	}
+
+
+	$TEHGOOBY=$_ -split(":") + $MTA
+	$MUHLANCER=$MUHLANCER+$TEHGOOBY+[environment]::newline
+}
